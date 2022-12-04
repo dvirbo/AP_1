@@ -7,50 +7,65 @@
 #include <stdint.h>
 #include <string.h>
 
-/*
-* Struct which holds the data/each task of each thread
-* so it's easier to pass instructions to workers
-*/
-typedef struct Data {
-    int key;
-    char *_flag;
-	char *message;
-} Data;
+#define IDX_N 1024 /* in this example */
 
-#define BUFFERSIZE 1024 // Given buffer size (1024!!!!#!@#!@#$)
+/* this structure will wrap all thread's data */
+typedef struct work
+{
+    size_t start, end;
+    pthread_t tid;
+} work, *pwork;
 
-char* flag; // For -d or -e
+char *sign;
+char buffer[IDX_N]; // 1024 as mentioned
 
-
-int main(int argc, char *argv[]){
-	/**
-	 * Less than 3 arguments
-	*/
-	if(argc != 3) {
-		printf("Too few arguments ");
-		printf("USAGE: ./coder <key> < -e or -d for encrypt/decrypt>");
-		exit(0);
-	}
-
-	// Get args from input (key & flag)
-	int given_key = atoi(argv[1]); // given key
-	flag = argv[2]; // -d or -e
-
-	// Input file/object/whatever
-    char buffer[BUFFERSIZE]; // 1024 as mentioned
-	char *str;
-    while(fgets(buffer, BUFFERSIZE , stdin) != NULL){
-		Data t = {
-			.key = given_key,
-            ._flag = flag,
-			.message = str
-        };
-	};
-	int n = sysconf(_SC_NPROCESSORS_ONLN); // Number of processors 
-
-	
-
-	
-	return 0;
+void *method(void *arg)
+{
+    pwork w = (pwork)arg;
+    /* now each thread can learn where it should start and stop
+     * by examining indices that were passed to it in argument */
+    for (size_t i = w->start; i < w->end; i++)
+        printf("%d\n", (buffer[i]));
+    return NULL;
 }
 
+int main(int argc, char const *argv[])
+{
+
+    /**
+     * Less than 3 arguments
+     */
+    if (argc != 3)
+    {
+        printf("Too few arguments ");
+        printf("USAGE: ./coder <key> < -e or -d for encrypt/decrypt>");
+        exit(0);
+    }
+
+    // Get args from input (key & flag)
+    int given_key = atoi(argv[1]); // given key
+    sign = argv[2];                // -d or -e
+
+    // Input file/object/whatever
+    if (fgets(buffer, IDX_N, stdin) == NULL)
+    {
+        puts("erorr eccur");
+    }
+    int n = sysconf(_SC_NPROCESSORS_ONLN); // Number of processors
+
+    work w[n];
+    size_t idx_start, idx_end, idx_n = IDX_N / n;
+    idx_start = 0;
+    idx_end = idx_start + idx_n;
+    for (size_t i = 0; i < n; ++i)
+    {
+        w[i].start = idx_start; /* starting index */
+        w[i].end = idx_end;     /* ending index */
+        /* pass the information about starting and ending point for each
+         * thread by pointing it's argument to appropriate work struct */
+        pthread_create(&w[i].tid, NULL, method, (void *)&w[i]);
+        idx_start = idx_end;
+        idx_end = (idx_end + idx_n < IDX_N ? idx_end + idx_n : IDX_N);
+    }
+    return 0;
+}

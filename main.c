@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 	printf("decripted data: %s\n",data);
 
 	return 0;
+	
 }
 
 
