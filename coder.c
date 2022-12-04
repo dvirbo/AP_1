@@ -1,93 +1,56 @@
-#include "codec.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
-
 #include <sys/sysinfo.h>
-
 #include <unistd.h>
-
-
-
-
-
-#define BUFFERSIZE 1024
-
-//
-// boss/worker pthreads model
-// the boss will create threads to handle incoming requests
-//
-//
-
-void task1()
-{
-    printf("task 1\n");
-}
-
-void task2()
-{
-    printf("task 2\n");
-}
-
-void task3()
-{
-    printf("task 3\n");
-}
-
-int main(int argc, const char *argv[])
-{
-    pthread_t thread1 = NULL, thread2 = NULL, thread3 = NULL;
-    // the manager/boss main thread
-    // the manager will create a pool of threads ahead of time to serve
-    // the requests .. in this example they are created when a request comes
-
-    int n = sysconf(_SC_NPROCESSORS_ONLN); // get number of processors
-
-    while (n)
-    {
-        // get a data from CMD
-        char buffer[BUFFERSIZE];
-        fgets(buffer, BUFFERSIZE, stdin);
-        printf("Read: %s", buffer);
-
-
-        switch (n)
-        {
-        case 1:
-            pthread_create(&thread1, NULL, (void *)task1, NULL);
-            break;
-        case 2:
-            pthread_create(&thread2, NULL, (void *)task2, NULL);
-            break;
-        default:
-            pthread_create(&thread3, NULL, (void *)task3, NULL);
-            break;
-        }
-    }
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
-    pthread_join(thread3, NULL);
-    printf("done!\n");
-    return 0;
-}
+#include "codec.h"
+#include <stdint.h>
+#include <string.h>
 
 /*
-
-n = sysconf(_SC_NPROCESSORS_ONLN); // get number of processors
-    pthread_t threads[n];
-
-
-
-   for (int count = 0; count < n; ++count)
-    {
-        if (pthread_create(&(threads[count]), NULL, (void*)thread, NULL) != 0)
-        {
-            fprintf(stderr, "error: Cannot create thread # %d\n", count+1);
-            break;
-        }                                
-    }
-    for (int i = 0 ; i< n; i++){
-        pthread_join(threads[i], NULL);            
-    }
-
+* Struct which holds the data/each task of each thread
+* so it's easier to pass instructions to workers
 */
+typedef struct Data {
+    int key;
+    char *_flag;
+	char *message;
+} Task;
+
+#define BUFFERSIZE 1024 // Given buffer size (1024!!!!#!@#!@#$)
+
+char* flag; // For -d or -e
+
+
+int main(int argc, char *argv[]){
+	/**
+	 * Less than 3 arguments
+	*/
+	if(argc != 3) {
+		printf("Too few arguments ");
+		printf("USAGE: ./coder <key> < -e or -d for encrypt/decrypt>");
+		exit(0);
+	}
+
+	// Get args from input (key & flag)
+	int given_key = atoi(argv[1]); // given key
+	flag = argv[2]; // -d or -e
+
+	// Input file/object/whatever
+    char buffer[BUFFERSIZE]; // 1024 as mentioned
+	char *str;
+    while(fgets(buffer, BUFFERSIZE , stdin) != NULL){
+		Task t = {
+			.key = given_key,
+            ._flag = flag,
+			.message = str
+        };
+	};
+	int n = sysconf(_SC_NPROCESSORS_ONLN); // Number of processors 
+
+	
+
+	
+	return 0;
+}
+
