@@ -15,7 +15,7 @@ typedef struct Data {
     int key;
     char *_flag;
 	char *message;
-} Task;
+} Data;
 
 #define BUFFERSIZE 1024 // Given buffer size (1024!!!!#!@#!@#$)
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]){
     char buffer[BUFFERSIZE]; // 1024 as mentioned
 	char *str;
     while(fgets(buffer, BUFFERSIZE , stdin) != NULL){
-		Task t = {
+		Data t = {
 			.key = given_key,
             ._flag = flag,
 			.message = str
